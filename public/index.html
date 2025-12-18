@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>juvie da vinci</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass {
+            background: radial-gradient(120% 120% at 50% 0%, #0a0a0a 0%, #050505 60%, #000 100%);
+        }
+
+        .soft {
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, .04), 0 20px 40px rgba(0, 0, 0, .8);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-black text-white flex items-center justify-center">
+
+    <div class="w-[min(1100px,95vw)] grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="glass soft rounded-3xl p-6 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-sm tracking-[0.25em] lowercase text-white/90">
+                    juvie da vinci
+                </h1>
+                <span id="count"
+                    class="text-[11px] px-3 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                    0 images
+                </span>
+            </div>
+
+            <input id="images" type="file" multiple accept="image/*" class="w-full text-sm file:mr-4 file:rounded-full file:border-0
+      file:bg-white/10 file:text-white file:px-4 file:py-2
+      hover:file:bg-white/20 rounded-full border border-white/10 bg-black/40" />
+
+            <div id="preview" class="grid grid-cols-3 gap-3"></div>
+
+            <textarea id="prompt" placeholder="describe what you want to do to the image" class="w-full min-h-[110px] resize-none rounded-2xl bg-black/40
+      border border-white/10 p-4 text-sm placeholder:text-white/30
+      focus:outline-none focus:ring-2 focus:ring-white/10"></textarea>
+
+            <button id="edit" class="rounded-full bg-white/10 hover:bg-white/20 transition
+      px-5 py-3 text-sm font-medium">
+                edit
+            </button>
+
+            <div id="status" class="rounded-2xl border border-white/10 bg-black/40
+      p-3 text-xs text-white/70 whitespace-pre-wrap">
+                ready
+            </div>
+        </div>
+
+        <div class="glass soft rounded-3xl p-6 flex flex-col gap-4">
+            <h2 class="text-xs tracking-widest lowercase text-white/70">result</h2>
+            <div class="flex-1 rounded-3xl border border-white/10 bg-black/40
+      flex items-center justify-center overflow-hidden">
+                <img id="result" class="max-h-full max-w-full object-contain rounded-3xl">
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const images = document.getElementById("images")
+        const preview = document.getElementById("preview")
+        const prompt = document.getElementById("prompt")
+        const status = document.getElementById("status")
+        const button = document.getElementById("edit")
+        const result = document.getElementById("result")
+        const count = document.getElementById("count")
+
+        images.addEventListener("change", () => {
+            preview.innerHTML = ""
+            const files = [...images.files]
+            count.textContent = `${files.length} image${files.length === 1 ? "" : "s"}`
+
+            for (const f of files) {
+                if (!f.type.startsWith("image/")) continue
+                const url = URL.createObjectURL(f)
+                const box = document.createElement("div")
+                box.className = "aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black/60"
+                const img = document.createElement("img")
+                img.src = url
+                img.className = "w-full h-full object-cover"
+                img.onload = () => URL.revokeObjectURL(url)
+                box.appendChild(img)
+                preview.appendChild(box)
+            }
+        })
+
+        function setStatus(t) {
+            status.textContent = t
+        }
+
+        button.addEventListener("click", async () => {
+            const files = [...images.files]
+            const text = prompt.value.trim()
+
+            result.src = ""
+
+            if (!text) {
+                setStatus("prompt is required")
+                return
+            }
+
+            if (!files.length) {
+                setStatus("no images selected")
+                return
+            }
+
+            button.disabled = true
+            button.classList.add("opacity-50")
+            setStatus("processing...")
+
+            try {
+                const form = new FormData()
+                form.append("prompt", text)
+
+                for (const f of files) {
+                    if (!f.type.startsWith("image/")) continue
+                    form.append("images", f)
+                }
+
+                const res = await fetch("/edit", { method: "post", body: form })
+
+                if (!res.ok) {
+                    const msg = await res.text()
+                    setStatus(`error ${res.status}\n${msg}`)
+                    return
+                }
+
+                const blob = await res.blob()
+                const type = res.headers.get("content-type") || ""
+
+                if (!type.startsWith("image/")) {
+                    const txt = await blob.text()
+                    setStatus(txt || "invalid response")
+                    return
+                }
+
+                result.src = URL.createObjectURL(blob)
+                setStatus("done")
+            } catch (e) {
+                setStatus(e?.message || "request failed")
+            } finally {
+                button.disabled = false
+                button.classList.remove("opacity-50")
+            }
+        })
+    </script>
+
+</body>
+
+</html>
