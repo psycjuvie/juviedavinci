@@ -168,5 +168,5 @@ app.use((err, req, res, next) => {
   res.status(500).send(String(err?.message || "internal server error"));
 });
 
-const port = process.env.PORT ? Number(process.env.PORT) : 9999;
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 app.listen(port, () => console.log(`server running on port ${port}`));
