@@ -2,156 +2,249 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>juvie da vinci</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .glass {
-            background: radial-gradient(120% 120% at 50% 0%, #0a0a0a 0%, #050505 60%, #000 100%);
-        }
-
-        .soft {
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, .04), 0 20px 40px rgba(0, 0, 0, .8);
-        }
-    </style>
 </head>
 
-<body class="min-h-screen bg-black text-white flex items-center justify-center">
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+    <div class="mx-auto w-[min(980px,92vw)] py-10">
+        <div class="rounded-3xl border border-white/10 bg-white/[0.03] overflow-hidden">
+            <div class="flex items-center gap-2 p-3 border-b border-white/10 bg-black/20">
+                <button id="tabImage"
+                    class="px-4 py-2 rounded-2xl text-sm border border-white/10 bg-white/10">image</button>
+                <button id="tabText"
+                    class="px-4 py-2 rounded-2xl text-sm border border-white/10 bg-transparent hover:bg-white/5">text</button>
 
-    <div class="w-[min(1100px,95vw)] grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex-1"></div>
 
-        <div class="glass soft rounded-3xl p-6 flex flex-col gap-4">
-            <div class="flex items-center justify-between">
-                <h1 class="text-sm tracking-[0.25em] lowercase text-white/90">
-                    juvie da vinci
-                </h1>
-                <span id="count"
-                    class="text-[11px] px-3 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
-                    0 images
-                </span>
+                <select id="mode"
+                    class="rounded-2xl border border-white/10 bg-zinc-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-white/10">
+                    <option value="normal">normal</option>
+                    <option value="pro">pro (1k)</option>
+                </select>
+
+                <button id="generate"
+                    class="rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 px-5 py-2 text-sm font-medium inline-flex items-center gap-2">
+                    <span id="genLabel">generate</span>
+                    <span id="spin"
+                        class="hidden w-4 h-4 rounded-full border border-white/30 border-t-white/80 animate-spin"></span>
+                </button>
             </div>
 
-            <input id="images" type="file" multiple accept="image/*" class="w-full text-sm file:mr-4 file:rounded-full file:border-0
-      file:bg-white/10 file:text-white file:px-4 file:py-2
-      hover:file:bg-white/20 rounded-full border border-white/10 bg-black/40" />
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <div class="p-6 border-b lg:border-b-0 lg:border-r border-white/10">
+                    <div id="imagePane">
+                        <input id="images" type="file" multiple accept="image/*"
+                            class="w-full rounded-2xl border border-white/10 bg-zinc-950 px-4 py-3 text-sm
+                     file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:text-white file:px-4 file:py-2 hover:file:bg-white/20" />
+                        <div id="preview" class="mt-4 grid grid-cols-3 gap-3"></div>
 
-            <div id="preview" class="grid grid-cols-3 gap-3"></div>
+                        <textarea id="promptImg" class="mt-4 w-full min-h-[180px] resize-none rounded-2xl border border-white/10 bg-zinc-950 p-4 text-sm
+                     placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-white/10"
+                            placeholder="describe the edit"></textarea>
+                    </div>
 
-            <textarea id="prompt" placeholder="describe what you want to do to the image" class="w-full min-h-[110px] resize-none rounded-2xl bg-black/40
-      border border-white/10 p-4 text-sm placeholder:text-white/30
-      focus:outline-none focus:ring-2 focus:ring-white/10"></textarea>
+                    <div id="textPane" class="hidden">
+                        <textarea id="promptText" class="w-full min-h-[320px] resize-none rounded-2xl border border-white/10 bg-zinc-950 p-4 text-sm
+                     placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-white/10"
+                            placeholder="ask anything"></textarea>
+                    </div>
 
-            <button id="edit" class="rounded-full bg-white/10 hover:bg-white/20 transition
-      px-5 py-3 text-sm font-medium">
-                edit
-            </button>
+                    <div id="msg" class="mt-4 text-sm text-zinc-300 hidden"></div>
+                </div>
 
-            <div id="status" class="rounded-2xl border border-white/10 bg-black/40
-      p-3 text-xs text-white/70 whitespace-pre-wrap">
-                ready
+                <div class="p-6">
+                    <div class="flex items-center justify-end">
+                        <button id="download"
+                            class="hidden px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-sm text-zinc-300">
+                            download
+                        </button>
+                    </div>
+
+                    <div
+                        class="mt-3 rounded-3xl border border-white/10 bg-zinc-950 h-[560px] flex items-center justify-center overflow-hidden">
+                        <img id="outImg" class="hidden max-h-full max-w-full object-contain" />
+                        <pre id="outText"
+                            class="hidden w-full h-full p-5 text-sm text-zinc-200 overflow-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="glass soft rounded-3xl p-6 flex flex-col gap-4">
-            <h2 class="text-xs tracking-widest lowercase text-white/70">result</h2>
-            <div class="flex-1 rounded-3xl border border-white/10 bg-black/40
-      flex items-center justify-center overflow-hidden">
-                <img id="result" class="max-h-full max-w-full object-contain rounded-3xl">
-            </div>
-        </div>
-
     </div>
 
     <script>
-        const images = document.getElementById("images")
-        const preview = document.getElementById("preview")
-        const prompt = document.getElementById("prompt")
-        const status = document.getElementById("status")
-        const button = document.getElementById("edit")
-        const result = document.getElementById("result")
-        const count = document.getElementById("count")
+        const tabImage = document.getElementById("tabImage");
+        const tabText = document.getElementById("tabText");
+        const imagePane = document.getElementById("imagePane");
+        const textPane = document.getElementById("textPane");
+
+        const modeSel = document.getElementById("mode");
+        const images = document.getElementById("images");
+        const preview = document.getElementById("preview");
+
+        const promptImg = document.getElementById("promptImg");
+        const promptText = document.getElementById("promptText");
+
+        const generate = document.getElementById("generate");
+        const genLabel = document.getElementById("genLabel");
+        const spin = document.getElementById("spin");
+
+        const outImg = document.getElementById("outImg");
+        const outText = document.getElementById("outText");
+        const download = document.getElementById("download");
+        const msg = document.getElementById("msg");
+
+        let activeTab = "image";
+        let lastBlobUrl = null;
+
+        const setBusy = (on) => {
+            generate.disabled = on;
+            generate.classList.toggle("opacity-50", on);
+            spin.classList.toggle("hidden", !on);
+            genLabel.textContent = on ? "loading" : "generate";
+        };
+
+        const showMsg = (t) => {
+            msg.textContent = t || "";
+            msg.classList.toggle("hidden", !t);
+        };
+
+        const resetOut = () => {
+            outImg.src = "";
+            outImg.classList.add("hidden");
+            outText.textContent = "";
+            outText.classList.add("hidden");
+            download.classList.add("hidden");
+            showMsg("");
+            if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; }
+        };
+
+        const showImg = (blob) => {
+            if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+            lastBlobUrl = URL.createObjectURL(blob);
+            outImg.src = lastBlobUrl;
+            outImg.classList.remove("hidden");
+            outText.classList.add("hidden");
+            download.classList.remove("hidden");
+        };
+
+        const showText = (t) => {
+            outText.textContent = t || "";
+            outText.classList.remove("hidden");
+            outImg.classList.add("hidden");
+            download.classList.add("hidden");
+        };
+
+        download.addEventListener("click", () => {
+            if (!lastBlobUrl) return;
+            const a = document.createElement("a");
+            a.href = lastBlobUrl;
+            a.download = "result.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+
+        const setTab = (t) => {
+            activeTab = t;
+
+            const isImage = t === "image";
+            imagePane.classList.toggle("hidden", !isImage);
+            textPane.classList.toggle("hidden", isImage);
+            modeSel.classList.toggle("hidden", !isImage);
+
+            tabImage.classList.toggle("bg-white/10", isImage);
+            tabImage.classList.toggle("bg-transparent", !isImage);
+            tabText.classList.toggle("bg-white/10", !isImage);
+            tabText.classList.toggle("bg-transparent", isImage);
+
+            resetOut();
+        };
+
+        tabImage.addEventListener("click", () => setTab("image"));
+        tabText.addEventListener("click", () => setTab("text"));
+        setTab("image");
 
         images.addEventListener("change", () => {
-            preview.innerHTML = ""
-            const files = [...images.files]
-            count.textContent = `${files.length} image${files.length === 1 ? "" : "s"}`
+            preview.innerHTML = "";
+            const files = [...images.files].slice(0, 9);
 
             for (const f of files) {
-                if (!f.type.startsWith("image/")) continue
-                const url = URL.createObjectURL(f)
-                const box = document.createElement("div")
-                box.className = "aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black/60"
-                const img = document.createElement("img")
-                img.src = url
-                img.className = "w-full h-full object-cover"
-                img.onload = () => URL.revokeObjectURL(url)
-                box.appendChild(img)
-                preview.appendChild(box)
+                if (!f.type.startsWith("image/")) continue;
+                const url = URL.createObjectURL(f);
+                const box = document.createElement("div");
+                box.className = "aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black/30";
+                const img = document.createElement("img");
+                img.src = url;
+                img.className = "w-full h-full object-cover";
+                img.onload = () => URL.revokeObjectURL(url);
+                box.appendChild(img);
+                preview.appendChild(box);
             }
-        })
+        });
 
-        function setStatus(t) {
-            status.textContent = t
-        }
+        const clamp = (s) => {
+            const t = String(s || "").trim();
+            return t.length > 4000 ? t.slice(0, 4000) : t;
+        };
 
-        button.addEventListener("click", async () => {
-            const files = [...images.files]
-            const text = prompt.value.trim()
+        const runEdit = async (finalPrompt, mode) => {
+            const files = [...images.files];
+            if (!files.length) throw new Error("no image selected");
 
-            result.src = ""
+            const form = new FormData();
+            form.append("prompt", finalPrompt);
+            form.append("mode", mode);
 
-            if (!text) {
-                setStatus("prompt is required")
-                return
-            }
+            for (const f of files) if (f.type.startsWith("image/")) form.append("images", f);
 
-            if (!files.length) {
-                setStatus("no images selected")
-                return
-            }
+            const res = await fetch("/edit", { method: "POST", body: form });
+            if (!res.ok) throw new Error(await res.text());
 
-            button.disabled = true
-            button.classList.add("opacity-50")
-            setStatus("processing...")
+            const blob = await res.blob();
+            const type = res.headers.get("content-type") || "";
+            if (!type.startsWith("image/")) throw new Error(await blob.text());
+
+            showImg(blob);
+        };
+
+        const runText = async (raw) => {
+            const res = await fetch("/text", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ prompt: raw }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const j = await res.json();
+            showText(j?.text || "");
+        };
+
+        generate.addEventListener("click", async () => {
+            resetOut();
+            setBusy(true);
 
             try {
-                const form = new FormData()
-                form.append("prompt", text)
-
-                for (const f of files) {
-                    if (!f.type.startsWith("image/")) continue
-                    form.append("images", f)
+                if (activeTab === "text") {
+                    const raw = clamp(promptText.value);
+                    if (!raw) throw new Error("prompt is required");
+                    await runText(raw);
+                    return;
                 }
 
-                const res = await fetch("/edit", { method: "post", body: form })
+                const raw = clamp(promptImg.value);
+                if (!raw) throw new Error("prompt is required");
+                if (images.files.length === 0) throw new Error("no image selected");
 
-                if (!res.ok) {
-                    const msg = await res.text()
-                    setStatus(`error ${res.status}\n${msg}`)
-                    return
-                }
-
-                const blob = await res.blob()
-                const type = res.headers.get("content-type") || ""
-
-                if (!type.startsWith("image/")) {
-                    const txt = await blob.text()
-                    setStatus(txt || "invalid response")
-                    return
-                }
-
-                result.src = URL.createObjectURL(blob)
-                setStatus("done")
+                await runEdit(raw, modeSel.value);
             } catch (e) {
-                setStatus(e?.message || "request failed")
+                showMsg(String(e?.message || e || "error"));
             } finally {
-                button.disabled = false
-                button.classList.remove("opacity-50")
+                setBusy(false);
             }
-        })
+        });
     </script>
-
 </body>
 
 </html>
